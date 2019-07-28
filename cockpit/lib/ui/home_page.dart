@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cockpit/ui/player_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -9,25 +10,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double _opacity = 0.5;
+  double _opacity = 0.3;
   @override
   void initState() {
-    
     super.initState();
 
-     Timer.periodic(Duration(seconds: 2), (timer){
+    Timer.periodic(Duration(seconds: 2), (timer) {
       print(_opacity);
-        setState(() {
-          _opacity == 1.0? _opacity = 0.5 : _opacity =  1.0;
-        });
+      setState(() {
+        _opacity == 1.0 ? _opacity = 0.3 : _opacity = 1.0;
+      });
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
-   
     return Scaffold(
-
       body: Stack(
         children: <Widget>[
           Container(
@@ -38,7 +36,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Container(
-            padding: EdgeInsets.only(top: 50),
+            padding: EdgeInsets.only(top: 20),
             alignment: Alignment.topCenter,
             child: Text(
               "Battle Field",
@@ -55,19 +53,36 @@ class _HomePageState extends State<HomePage> {
               child: InkWell(
                 onTap: () {
                   print('start...');
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        transitionsBuilder: (
+                          BuildContext context,
+                          Animation<double> animation,
+                          Animation<double> secondaryAnimation,
+                          Widget child,
+                        ) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        pageBuilder: (BuildContext context, Animation animation,
+                            Animation secondaryAnimation) {
+                          return PlayerPage();
+                        },
+                      ));
                 },
                 child: Material(
                   type: MaterialType.transparency,
                   child: Text(
                     "Start",
                     style: TextStyle(
-                      fontFamily: "Headliner",
-                      fontSize: 40,
-
-                      letterSpacing: 5,
-                      color: Colors.white
-                    ),
-                    ),
+                        fontFamily: "Headliner",
+                        fontSize: 40,
+                        letterSpacing: 5,
+                        color: Colors.white),
+                  ),
                 ),
               ),
             ),
@@ -75,12 +90,20 @@ class _HomePageState extends State<HomePage> {
           Positioned(
             top: 8,
             right: 20,
-            child:  IconButton(
-            onPressed: (){
-
-            },
-            icon: Icon(Icons.settings,color: Colors.white,),
+            child: IconButton(
+              onPressed: () {},
+              icon: Icon(
+                Icons.settings,
+                color: Colors.white,
+              ),
+            ),
           ),
+          Container(
+            alignment: Alignment.bottomCenter,
+            padding: EdgeInsets.only(bottom: 5),
+            child: Text("Liangdi @ 蘑菇云脑洞大赛",
+                style: TextStyle(
+                    color: Colors.white, fontFamily: "Halo3", fontSize: 10)),
           )
         ],
       ),

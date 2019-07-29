@@ -1,21 +1,20 @@
 
 #include <WiFi.h>
 #include <MQTT.h>
-
-#include "IotClient.h";
-#include "config.h";
-
 #include <analogWrite.h>
+
+#include "config.h";
+#include "IotClient.h";
 #include "TB6612Drive.h"
 
-TB6612Drive _TB6612Drive = TB6612Drive();
 
 WiFiClient net;
 MQTTClient client;
 
 IotClient iotClient;
+TB6612Drive _TB6612Drive = TB6612Drive();
 
-unsigned long lastMillis = 0;
+
 
 void connect()
 {
@@ -74,8 +73,10 @@ void setup()
   client.begin(server, port, net);
   iotClient.begin(&client, mqttUser, mqttPass, deviceUUID);
   iotClient.onAction(onAction);
-  connect();
   _TB6612Drive.setup();
+
+  connect();
+
 }
 
 void loop()
@@ -86,12 +87,5 @@ void loop()
   if (!client.connected())
   {
     connect();
-  }
-
-  // publish a message roughly every second.
-  if (millis() - lastMillis > 1000)
-  {
-    lastMillis = millis();
-    //client.publish("/hello", "world");
   }
 }

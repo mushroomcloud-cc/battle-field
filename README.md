@@ -15,12 +15,12 @@
 * [游戏机制](./mechanism.md)
 
 ### 项目分布 (注意: 项目原型阶段，所有代码都有可能随时推倒更新)
-* [cockpit](./cockpit/README.md) 手机控制端
-* [game-station](./game-station/README.md) 游戏服务器
-* [game](./game/README.md) 游戏程序
+* [cockpit](./cockpit/) 手机控制端
+* [game-station](./game-station/) 游戏服务器
+* [game](./game/) 游戏程序
 * [tank](./tank/) 战车端程序
-* [tank-detector](./tank-detector/README.md) 战车识别跟踪程序 
-* [scene-controller](./scene-controller/README.md) 场景控制程序
+* [tank-detector](./tank-detector/) 战车识别跟踪程序 
+* [scene-controller](./scene-controller/) 场景控制程序
 
 ### 技术方案
 

@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <MQTT.h>
 #include <analogWrite.h>
+#include <ArduinoJson.h>
 
 #include "config.h";
 #include "IotClient.h";
@@ -37,7 +38,7 @@ void connect()
   // client.unsubscribe("/hello");
 }
 
-void onAction(String &action, String &payload)
+void onAction(String &action, JsonObject &params)
 {
   Serial.println("on action:" + action);
   if (action == "stop")

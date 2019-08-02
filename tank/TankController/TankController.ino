@@ -8,7 +8,12 @@
 #include <analogWrite.h>
 #include "TB6612Drive.h"
 
+#include "GyroMpu6050.h"
+#include "Wire.h"
+
 TB6612Drive _TB6612Drive = TB6612Drive();
+
+GyroMpu6050 _GyroMpu6050 = GyroMpu6050();
 
 WiFiClient net;
 MQTTClient client;
@@ -76,6 +81,14 @@ void setup()
   iotClient.onAction(onAction);
   connect();
   _TB6612Drive.setup();
+  Wire.begin();
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  _GyroMpu6050.setup();
+
+  if (_GyroMpu6050.error)
+  {
+    //
+  }
 }
 
 void loop()
@@ -94,4 +107,17 @@ void loop()
     lastMillis = millis();
     //client.publish("/hello", "world");
   }
+  // if (!_GyroMpu6050.error)
+  //   {
+  //       _GyroMpu6050.update();
+
+  //       Serial.print("ypr\t");
+  //       Serial.print(_GyroMpu6050.yaw);
+  //       Serial.print("\t");
+  //       Serial.print(_GyroMpu6050.pitch);
+  //       Serial.print("\t");
+  //       Serial.println(_GyroMpu6050.roll);
+
+  //       delay(100);
+  //   }
 }

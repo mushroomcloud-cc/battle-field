@@ -1,11 +1,11 @@
 
 #include <WiFi.h>
 #include <MQTT.h>
-
-#include "IotClient.h";
-#include "config.h";
-
 #include <analogWrite.h>
+#include <ArduinoJson.h>
+
+#include "config.h";
+#include "IotClient.h";
 #include "TB6612Drive.h"
 
 #include "GyroMpu6050.h"
@@ -19,8 +19,9 @@ WiFiClient net;
 MQTTClient client;
 
 IotClient iotClient;
+TB6612Drive _TB6612Drive = TB6612Drive();
 
-unsigned long lastMillis = 0;
+
 
 void connect()
 {
@@ -43,7 +44,7 @@ void connect()
   // client.unsubscribe("/hello");
 }
 
-void onAction(String &action, String &payload)
+void onAction(String &action, JsonObject &params)
 {
   Serial.println("on action:" + action);
   if (action == "stop")
@@ -79,8 +80,10 @@ void setup()
   client.begin(server, port, net);
   iotClient.begin(&client, mqttUser, mqttPass, deviceUUID);
   iotClient.onAction(onAction);
-  connect();
   _TB6612Drive.setup();
+
+  connect();
+
   Wire.begin();
   Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
   _GyroMpu6050.setup();
@@ -99,13 +102,6 @@ void loop()
   if (!client.connected())
   {
     connect();
-  }
-
-  // publish a message roughly every second.
-  if (millis() - lastMillis > 1000)
-  {
-    lastMillis = millis();
-    //client.publish("/hello", "world");
   }
   // if (!_GyroMpu6050.error)
   //   {

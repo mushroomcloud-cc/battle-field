@@ -1,5 +1,7 @@
-#include "IotClient.h"
 #include <MQTT.h>
+
+#include "IotClient.h"
+
 class MQTTClient;
 
 IotClient *instance = nullptr;
@@ -29,8 +31,17 @@ bool IotClient::connect()
 void  IotClient::messageReceived(String &topic, String &payload)
 {
     Serial.println("incoming: " + topic + " - " + payload);
+    // TODO check topic
+
+
+   
     if(instance != nullptr && instance->actionCallback != nullptr) {
-        instance->actionCallback(topic,payload);
+        DynamicJsonDocument doc(1024);
+        deserializeJson(doc, payload);
+        JsonObject obj = doc.as<JsonObject>();
+        String actionName = obj["name"];
+        auto paramMap = obj["paramMap"].as<JsonObject>();
+        instance->actionCallback(actionName,paramMap);
     }
     
 }

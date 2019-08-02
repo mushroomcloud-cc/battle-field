@@ -3,8 +3,9 @@
 
 #include <iostream>
 #include <MQTT.h>
+#include <ArduinoJson.h>
 
-typedef void (*ActionCallback)(String &action,String &payload);
+typedef void (*ActionCallback)(String &action,JsonObject &params);
 
 
 class MQTTClient;

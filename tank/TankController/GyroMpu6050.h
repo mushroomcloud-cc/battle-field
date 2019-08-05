@@ -1,6 +1,5 @@
 #pragma once
 #include "Arduino.h"
-#include "GyroMpu6050.h"
 #define INTERRUPT_PIN D3
 
 class GyroMpu6050
@@ -32,4 +31,5 @@ public:
     ~GyroMpu6050();
     void setup();
     void update();
+    void getFIFOCount();
 };

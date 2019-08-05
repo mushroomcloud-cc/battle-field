@@ -1,13 +1,13 @@
 #include "GyroMpu6050.h"
 #include "Arduino.h"
 #include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+#include "MPU6050_6Axis_MotionApps_V6_12.h"
 
-GyroMpu6050 *instance;
+GyroMpu6050 *mpuInstance;
 
 void dmpDataReady()
 {
-    instance->mpuInterrupt = true;
+    mpuInstance->mpuInterrupt = true;
 }
 MPU6050 mpu;
 Quaternion q;        // [w, x, y, z]         quaternion container
@@ -26,7 +26,7 @@ GyroMpu6050::~GyroMpu6050()
 
 void GyroMpu6050::setup()
 {
-    instance = this;
+    mpuInstance = this;
 
     mpu.initialize();
     pinMode(INTERRUPT_PIN, INPUT);
@@ -34,16 +34,24 @@ void GyroMpu6050::setup()
     // verify connection
     this->connected = mpu.testConnection();
     // load and configure the DMP
+    
     devStatus = mpu.dmpInitialize();
-
+    //           X Accel  Y Accel  Z Accel   X Gyro   Y Gyro   Z Gyro
+//OFFSETS    -4354,    1180,    1446,      54,     -60,      42
     mpu.setXGyroOffset(54);
-    mpu.setYGyroOffset(-63);
-    mpu.setZGyroOffset(41);
-    mpu.setZAccelOffset(1301); // use IMU-ZERO to get the offsets
+    mpu.setYGyroOffset(-60);
+    mpu.setZGyroOffset(42);
+    mpu.setXAccelOffset(-4354);
+    mpu.setYAccelOffset(1180);
+    mpu.setZAccelOffset(1446);
+    mpu.setDMPEnabled(true);
+
     // make sure it worked (returns 0 if so)
     if (devStatus == 0)
     {
-        mpu.setDMPEnabled(true);
+
+        mpu.setXGyroOffset(54);
+
         attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);
         mpuIntStatus = mpu.getIntStatus();
         dmpReady = true;
@@ -57,24 +65,6 @@ void GyroMpu6050::setup()
 
 void GyroMpu6050::update()
 {
-    // if programming failed, don't try to do anything
-
-    // wait for MPU interrupt or extra packet(s) available
-    // while (!mpuInterrupt && fifoCount < packetSize)
-    // {
-    //     if (mpuInterrupt && fifoCount < packetSize)
-    //     {
-    //         // try to get out of the infinite loop
-    //         fifoCount = mpu.getFIFOCount();
-    //     }
-    // }
-
-    if (!mpuInterrupt)
-    {
-        return;
-    }
-
-    // reset interrupt flag and get INT_STATUS byte
     mpuInterrupt = false;
     mpuIntStatus = mpu.getIntStatus();
 
@@ -87,7 +77,7 @@ void GyroMpu6050::update()
         // reset so we can continue cleanly
         mpu.resetFIFO();
         fifoCount = mpu.getFIFOCount();
-
+        Serial.println("fifo overflow");
         // otherwise, check for DMP data ready interrupt (this should happen frequently)
     }
     else if (mpuIntStatus & _BV(MPU6050_INTERRUPT_DMP_INT_BIT))
@@ -111,4 +101,8 @@ void GyroMpu6050::update()
         pitch = ypr[1] * 180 / M_PI;
         roll = ypr[2] * 180 / M_PI;
     }
+}
+
+void GyroMpu6050::getFIFOCount() {
+    this->fifoCount = mpu.getFIFOCount();
 }

@@ -25,7 +25,8 @@ public:
     static void  messageReceived(String &topic, String &payload);
     void onAction(ActionCallback callback);
     bool connect();
-
+    void publishData(JsonObject data);
+    void publishJsonData(String data);
 };
 
 #endif

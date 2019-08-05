@@ -4,7 +4,7 @@
 
 class MQTTClient;
 
-IotClient *instance = nullptr;
+IotClient *iotInstance = nullptr;
 
 void IotClient::begin(MQTTClient *mqttClient, String user, String password, String clientUUID)
 {
@@ -14,7 +14,7 @@ void IotClient::begin(MQTTClient *mqttClient, String user, String password, Stri
     this->password = password;
 
     this->mqttClient->onMessage(this->messageReceived);
-    instance = this;
+    iotInstance = this;
 }
 
 bool IotClient::connect()
@@ -28,24 +28,37 @@ bool IotClient::connect()
     return true;
 }
 
-void  IotClient::messageReceived(String &topic, String &payload)
+void IotClient::messageReceived(String &topic, String &payload)
 {
     Serial.println("incoming: " + topic + " - " + payload);
     // TODO check topic
 
-
-   
-    if(instance != nullptr && instance->actionCallback != nullptr) {
+    if (iotInstance != nullptr && iotInstance->actionCallback != nullptr)
+    {
         DynamicJsonDocument doc(1024);
         deserializeJson(doc, payload);
         JsonObject obj = doc.as<JsonObject>();
         String actionName = obj["name"];
         auto paramMap = obj["paramMap"].as<JsonObject>();
-        instance->actionCallback(actionName,paramMap);
+        iotInstance->actionCallback(actionName, paramMap);
     }
-    
 }
 
-void IotClient::onAction(ActionCallback callback) {
+void IotClient::publishData(JsonObject data)
+{
+
+    String output;
+    serializeJson(data, output);
+    this->mqttClient->publish("iot/data/" + this->clientUUID, output);
+}
+
+void IotClient::publishJsonData(String json) {
+     this->mqttClient->publish("iot/data/" + this->clientUUID, json);
+}
+
+
+
+void IotClient::onAction(ActionCallback callback)
+{
     this->actionCallback = callback;
 }

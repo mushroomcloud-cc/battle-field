@@ -1,27 +1,70 @@
-
+#include <Wire.h>
 #include <WiFi.h>
 #include <MQTT.h>
 #include <analogWrite.h>
 #include <ArduinoJson.h>
+#include <MPU6050_tockn.h>
 
 #include "config.h";
 #include "IotClient.h";
 #include "TB6612Drive.h"
 
-#include "GyroMpu6050.h"
-#include "Wire.h"
+
 
 TB6612Drive _TB6612Drive = TB6612Drive();
-
-GyroMpu6050 _GyroMpu6050 = GyroMpu6050();
 
 WiFiClient net;
 MQTTClient client;
 
 IotClient iotClient;
-TB6612Drive _TB6612Drive = TB6612Drive();
+MPU6050 mpu6050(Wire);
+
+void setup()
+{
+  Serial.begin(115200);
+  WiFi.begin(ssid, pass);
+  client.begin(server, port, net);
+  iotClient.begin(&client, mqttUser, mqttPass, deviceUUID);
+  iotClient.onAction(onAction);
+  _TB6612Drive.setup();
+
+  Wire.begin();
+  // Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  mpu6050.begin();
+  mpu6050.calcGyroOffsets(true);
 
 
+  connect();
+}
+
+unsigned long lastMillis = 0;
+void loop()
+{
+  client.loop();
+  // delay(10); // <- fixes some issues with WiFi stability
+
+  if (!client.connected())
+  {
+    connect();
+  }
+
+  mpu6050.update();
+ if (millis() - lastMillis > 400)
+    {
+      lastMillis = millis();
+      Serial.print("ypr\t");
+      Serial.println(mpu6050.getAngleZ());
+      DynamicJsonDocument data(1024);
+      data["yaw"] = mpu6050.getAngleZ();
+
+      String json = "";
+      serializeJson(data, json);
+      Serial.println("send json:" + json);
+      iotClient.publishJsonData(json);
+    }
+
+
+}
 
 void connect()
 {
@@ -43,7 +86,6 @@ void connect()
 
   // client.unsubscribe("/hello");
 }
-
 void onAction(String &action, JsonObject &params)
 {
   Serial.println("on action:" + action);
@@ -71,49 +113,4 @@ void onAction(String &action, JsonObject &params)
   {
     Serial.println("error");
   }
-}
-
-void setup()
-{
-  Serial.begin(115200);
-  WiFi.begin(ssid, pass);
-  client.begin(server, port, net);
-  iotClient.begin(&client, mqttUser, mqttPass, deviceUUID);
-  iotClient.onAction(onAction);
-  _TB6612Drive.setup();
-
-  connect();
-
-  Wire.begin();
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
-  _GyroMpu6050.setup();
-
-  if (_GyroMpu6050.error)
-  {
-    //
-  }
-}
-
-void loop()
-{
-  client.loop();
-  delay(10); // <- fixes some issues with WiFi stability
-
-  if (!client.connected())
-  {
-    connect();
-  }
-  // if (!_GyroMpu6050.error)
-  //   {
-  //       _GyroMpu6050.update();
-
-  //       Serial.print("ypr\t");
-  //       Serial.print(_GyroMpu6050.yaw);
-  //       Serial.print("\t");
-  //       Serial.print(_GyroMpu6050.pitch);
-  //       Serial.print("\t");
-  //       Serial.println(_GyroMpu6050.roll);
-
-  //       delay(100);
-  //   }
 }

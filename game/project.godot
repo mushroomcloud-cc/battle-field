@@ -19,6 +19,10 @@ config/name="battle-field"
 run/main_scene="res://scenes/main.tscn"
 config/icon="res://icon.png"
 
+[editor_plugins]
+
+enabled=PoolStringArray( "atlas_importer3" )
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"
